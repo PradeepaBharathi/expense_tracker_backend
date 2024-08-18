@@ -25,6 +25,8 @@ export const registerUser = async (req, res) => {
       confirmPassword : hashedConfirmPassword,
     });
     console.log(user)
+    const token = await generateToken(user._id);
+    
     if (user) {
       return res.status(201).json({
         message: "Registration Successful",
@@ -34,6 +36,8 @@ export const registerUser = async (req, res) => {
           password: user.password,
           confirmPassword: user.confirmPassword,
         },
+       token:token,
+
       });
     }
   } catch (error) {
@@ -59,7 +63,6 @@ export const LoginUser = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(404).json({message: "Incorrect username or password" });
     }
-    const token = await generateToken(user._id);
     
     if (user) {
       return res.status(201).json({
