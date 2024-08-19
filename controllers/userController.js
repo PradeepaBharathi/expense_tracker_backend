@@ -26,18 +26,17 @@ export const registerUser = async (req, res) => {
     });
     console.log(user)
     const token = await generateToken(user._id);
-    
+
     if (user) {
       return res.status(201).json({
         message: "Registration Successful",
+        token:token,
         user: {
-          name: user.username,
+          username: user.username,
           email: user.email,
           password: user.password,
           confirmPassword: user.confirmPassword,
         },
-       token:token,
-
       });
     }
   } catch (error) {
@@ -49,37 +48,35 @@ export const LoginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if(!email || !password){
+    if (!email || !password) {
       return res.status(400).json({ message: "Please fill all details" });
+    }
 
-    }
     const user = await Users.findOne({ email });
+    console.log(user)
     if (!user) {
-      return res
-        .status(404)
-        .json({ message: "Incorrect username or password" });
+      return res.status(401).json({ message: "Incorrect username or password" });
     }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(404).json({message: "Incorrect username or password" });
+      return res.status(401).json({ message: "Incorrect  password" });
     }
-    
-    if (user) {
-      return res.status(201).json({
-       message:"Login Successfull",
-       token:token,
-       data:user
-      });
-    } else {
-      return res
-        .status(404)
-        .json({ message: "Incorrect username or password" });
-    }
+
+    const token = await generateToken(user._id);
+
+    return res.status(200).json({
+      message: "Login Successful",
+      token: token,
+      data: user
+    });
+
   } catch (error) {
-    console.log(error);
-    return res.status(404).json({ message: "Incorrect username or password" });
+    console.error("Login error:", error);
+    return res.status(500).json({ message: "Server error, please try again later." });
   }
 };
+
 
 
 export async function generateToken(id,secret){
